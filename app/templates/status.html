@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Status · PriceWatch{% endblock %}
+{% block content %}
+<h1>Scraper health</h1>
+
+<section class="stats">
+  <div class="stat"><span class="label">Attempts ({{ health.days }}d)</span><span class="value">{{ health.attempts }}</span></div>
+  <div class="stat"><span class="label">Success rate</span>
+    <span class="value">{% if health.success_rate is not none %}{{ "%.1f"|format(health.success_rate) }}%{% else %}—{% endif %}</span></div>
+  <div class="stat"><span class="label">Avg fetch time</span>
+    <span class="value">{% if health.avg_duration_ms %}{{ health.avg_duration_ms }} ms{% else %}—{% endif %}</span></div>
+  <div class="stat {% if health.failing_products %}bad{% endif %}"><span class="label">Failing products</span><span class="value">{{ health.failing_products }}</span></div>
+</section>
+
+<section class="card">
+  <div class="card-head">
+    <h2>Scheduler</h2>
+    <form method="post" action="/check-all"><button class="secondary" type="submit">Run check now</button></form>
+  </div>
+  <p>Interval: every {{ interval }} minutes.
+     {% if next_run %}Next run: {{ next_run.strftime("%d %b %Y %H:%M UTC") }}.{% else %}Scheduler not running.{% endif %}</p>
+  <p>Adapters loaded: {% for a in adapters %}<span class="pill">{{ a }}</span> {% endfor %}</p>
+</section>
+
+<section class="card">
+  <h2>Per-product status</h2>
+  <table>
+    <thead><tr><th>Product</th><th>Store</th><th>Last checked</th><th>Status</th></tr></thead>
+    <tbody>
+    {% for p in products %}
+      <tr>
+        <td><a href="/products/{{ p.id }}">{{ p.title }}</a></td>
+        <td><span class="pill">{{ p.store }}</span></td>
+        <td>{% if p.last_checked_at %}{{ p.last_checked_at.strftime("%d %b %H:%M") }}{% else %}never{% endif %}</td>
+        <td>{% if p.last_error %}<span class="badge bad">fail</span> <span class="muted-text">{{ p.last_error }}</span>{% else %}<span class="badge ok">healthy</span>{% endif %}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="4" class="empty">No products tracked.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section class="card">
+  <h2>Recent scrape log</h2>
+  <table class="compact">
+    <tbody>
+    {% for l in logs %}
+      <tr>
+        <td>{{ l.created_at.strftime("%d %b %H:%M:%S") }}</td>
+        <td><a href="/products/{{ l.product_id }}">#{{ l.product_id }}</a></td>
+        <td>{% if l.success %}<span class="badge ok">ok</span>{% else %}<span class="badge bad">fail</span>{% endif %}</td>
+        <td class="muted-text">{{ l.duration_ms }} ms {% if l.message %}· {{ l.message }}{% endif %}</td>
+      </tr>
+    {% else %}
+      <tr><td class="empty">No scrape attempts yet.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}
