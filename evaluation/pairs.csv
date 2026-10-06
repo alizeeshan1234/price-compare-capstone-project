@@ -1,0 +1,79 @@
+title_a,title_b,same,note
+"Apple iPhone 15 (128 GB) - Black","APPLE iPhone 15 (Black, 128 GB)",1,bracket order
+"Apple iPhone 15 (Blue, 256 GB)","Apple iPhone 15 256GB Blue",1,spec spacing
+"Samsung Galaxy S24 5G (Onyx Black, 8GB RAM, 256GB Storage)","SAMSUNG Galaxy S24 5G (Onyx Black, 256 GB)",1,one store omits RAM
+"Sony WH-1000XM5 Wireless Noise Cancelling Headphones, Black","Sony WH1000XM5 Over-Ear Bluetooth Headphones (Black)",1,hyphenated model code
+"boAt Airdopes 141 Bluetooth Truly Wireless in Ear Earbuds with 42H Playtime","boAt Airdopes 141 TWS Earbuds, 42 Hours Playback (Black)",1,marketing words
+"OnePlus 12 5G (Silky Black, 12GB RAM, 256GB Storage)","OnePlus 12 (Silky Black, 256 GB) (12 GB RAM)",1,
+"Logitech MX Master 3S Wireless Mouse, Graphite","Logitech MX Master 3S Performance Wireless Mouse - Graphite",1,
+"Samsung 108 cm (43 inches) Crystal 4K Vision Pro Ultra HD Smart LED TV UA43DUE70BKLXL","SAMSUNG Crystal 4K Vision Pro 108 cm (43 inch) Ultra HD (4K) LED Smart Tizen TV (UA43DUE70BKLXL)",1,tv model code
+"Apple AirPods Pro (2nd Generation) with MagSafe Case (USB-C)","APPLE AirPods Pro 2nd Gen USB-C Bluetooth Headset",1,
+"Google Pixel 8a (Obsidian, 128 GB) (8 GB RAM)","Google Pixel 8a 5G 128GB Obsidian",1,
+"Realme Narzo 70 5G (Forest Green, 128 GB) (8 GB RAM)","realme NARZO 70 5G 8GB 128GB Forest Green",1,
+"Dell 15 Laptop, Intel Core i5-1334U, 8GB, 512GB SSD, 15.6 FHD","DELL 15 Intel Core i5 13th Gen 1334U - (8 GB/512 GB SSD/Windows 11 Home) Thin and Light Laptop",1,laptop spec soup
+"Sony WF-1000XM5 Truly Wireless Noise Cancelling Earbuds (Black)","Sony WF1000XM5 TWS Earbuds Black",1,
+"JBL Flip 6 Wireless Portable Bluetooth Speaker, Black","JBL Flip 6 20 W Bluetooth Speaker (Black, Stereo Channel)",1,
+"Xiaomi Redmi Note 13 Pro 5G (Coral Purple, 8GB RAM, 256GB Storage)","REDMI Note 13 Pro 5G (Coral Purple, 256 GB) (8 GB RAM)",1,brand prefix differs
+"Nothing Phone (2a) (Black, 128 GB) (8 GB RAM)","Nothing Phone 2a 5G 8GB 128GB Black",1,
+"Apple Watch Series 9 GPS 45mm Midnight Aluminium Case","APPLE Watch Series 9 GPS 45 mm Midnight Aluminium",1,
+"Samsung Galaxy Buds2 Pro Bluetooth Truly Wireless in Ear Earbuds (Graphite)","SAMSUNG Galaxy Buds2 Pro Bluetooth Headset (Graphite, True Wireless)",1,
+"LG 7 Kg 5 Star Inverter Fully-Automatic Front Load Washing Machine FHM1207SDL","LG 7 kg Fully Automatic Front Load Washing Machine with In-built Heater Silver (FHM1207SDL)",1,
+"HP DeskJet 2331 All-in-One Printer","HP DeskJet 2331 Multi-function Color Inkjet Printer",1,
+"Canon EOS R50 Mirrorless Camera with RF-S 18-45mm Lens (Black)","Canon EOS R50 Mirrorless Camera RF-S18-45mm Kit Black",1,
+"Apple iPad (10th Gen) 10.9 inch Wi-Fi 64GB Blue","APPLE iPad 10th Gen 64 GB ROM 10.9 inch with Wi-Fi Only (Blue)",1,
+"Samsung Galaxy A15 5G (Blue Black, 8GB RAM, 128GB Storage)","SAMSUNG Galaxy A15 5G (Blue Black, 128 GB) (8 GB RAM)",1,
+"Motorola Edge 50 Pro 5G (Luxe Lavender, 256 GB) (12 GB RAM)","Motorola Edge 50 Pro 5G 12GB 256GB Luxe Lavender",1,
+"Sony PlayStation 5 Console (Slim) Disc Edition","SONY PlayStation 5 Slim Disc Edition Console (Standard)",1,
+"Lenovo IdeaPad Slim 3 Intel Core i5 12th Gen 15.6 FHD Laptop (16GB/512GB SSD)","Lenovo IdeaPad Slim 3 Intel Core i5 12th Gen 12450H - (16 GB/512 GB SSD/Windows 11 Home) Laptop",1,
+"Vivo T3 5G (Cosmic Blue, 128 GB) (8 GB RAM)","vivo T3 5G Cosmic Blue 8GB 128GB",1,
+"Apple MacBook Air M2 13.6 inch 8GB 256GB Midnight","APPLE MacBook Air M2 - (8 GB/256 GB SSD/macOS Monterey) Midnight 13.6 inch",1,
+"boAt Rockerz 450 Bluetooth On Ear Headphones with Mic (Luscious Black)","boAt Rockerz 450 Bluetooth Headset (Luscious Black, On the Ear)",1,
+"SAMSUNG Galaxy S24 Ultra 5G (Titanium Black, 256 GB) (12 GB RAM)","Samsung Galaxy S24 Ultra 5G AI Smartphone (Titanium Black, 12GB, 256GB Storage)",1,
+"Apple iPhone 15 Pro Max (256 GB) - Natural Titanium","APPLE iPhone 15 Pro Max (Natural Titanium, 256 GB)",1,
+"boAt Airdopes 141 (Bold Black)","boAt Air dopes 141 Bluetooth Earbuds Bold Black",1,spelling split
+"Logitech G502 HERO High Performance Wired Gaming Mouse","Logitech G502 Hero Gaming Mouse (USB, Black)",1,
+"Sony Bravia 139 cm (55 inches) 4K Ultra HD Smart LED Google TV KD-55X75L","SONY Bravia X75L 139 cm (55 inch) Ultra HD (4K) LED Smart Google TV (KD-55X75L)",1,
+"Mi 360° Home Security Camera 2K Pro","Xiaomi 360 Home Security Camera 2K Pro",1,brand alias
+"Fire-Boltt Ninja Call Pro Plus 1.83 Smart Watch","Fire Boltt Ninja Call Pro Plus Smartwatch 1.83 inch",1,hyphen and compound word
+"Boult Audio Z40 TWS Earbuds","Boult Z40 Truly Wireless Earbuds",1,
+"Samsung 253 L 3 Star Inverter Frost Free Double Door Refrigerator (RT28C3053S8/HL, Elegant Inox)","SAMSUNG 253 L Frost Free Double Door 3 Star Refrigerator (Elegant Inox, RT28C3053S8/HL)",1,
+"Philips HL7756/00 750W Mixer Grinder","PHILIPS HL7756/00 750 W Mixer Grinder (3 Jars, Black)",1,
+"Crompton Hill Briz 1200mm Ceiling Fan","Crompton Hill Briz 1200 mm High Speed Ceiling Fan (Brown)",1,
+"Apple iPhone 15 (128 GB) - Black","Apple iPhone 15 (256 GB) - Black",0,storage tier
+"Apple iPhone 15 (128 GB) - Black","Apple iPhone 15 Plus (128 GB) - Black",0,plus variant
+"Apple iPhone 15 Pro (128 GB) Natural Titanium","Apple iPhone 15 Pro Max (256 GB) Natural Titanium",0,pro vs pro max
+"Apple iPhone 15 (128 GB) - Black","Apple iPhone 16 (128 GB) - Black",0,generation
+"Sony WH-1000XM5 Wireless Headphones Black","Sony WF-1000XM5 Wireless Earbuds Black",0,WH vs WF
+"Sony WH-1000XM5 Wireless Headphones Black","Sony WH-1000XM4 Wireless Headphones Black",0,XM4 vs XM5
+"Samsung Galaxy S24 5G (256GB)","Samsung Galaxy S24 Ultra 5G (256GB)",0,ultra variant
+"Samsung Galaxy S24 5G (8GB RAM, 256GB)","Samsung Galaxy S23 5G (8GB RAM, 256GB)",0,
+"Logitech MX Master 3S Wireless Mouse","Logitech MX Anywhere 3S Wireless Mouse",0,
+"boAt Airdopes 141 TWS Earbuds","boAt Airdopes 161 TWS Earbuds",0,
+"Apple iPhone 15 (128 GB) - Black","Spigen Liquid Air Back Cover Case Compatible with iPhone 15 (Matte Black)",0,accessory
+"Apple iPhone 15 (128 GB) - Black","Apple 20W USB-C Power Adapter for iPhone 15",0,accessory
+"Samsung 108 cm (43 inch) Crystal 4K UHD Smart TV","Samsung 138 cm (55 inch) Crystal 4K UHD Smart TV",0,screen size
+"Google Pixel 8a 128GB","Google Pixel 8 Pro 128GB",0,
+"OnePlus 12 5G 256GB","OnePlus 12R 5G 256GB",0,R suffix
+"Apple AirPods Pro (2nd Generation)","Apple AirPods (3rd Generation)",0,
+"Apple Watch Series 9 GPS 45mm","Apple Watch Series 9 GPS 41mm",0,case size
+"Samsung Galaxy Buds2 Pro","Samsung Galaxy Buds FE",0,
+"Dell 15 Laptop i5 8GB 512GB","Dell 15 Laptop i5 16GB 512GB",0,RAM
+"JBL Flip 6 Bluetooth Speaker","JBL Flip 5 Bluetooth Speaker",0,
+"Redmi Note 13 Pro 5G 256GB","Redmi Note 13 Pro+ 5G 256GB",0,plus sign
+"Nothing Phone (2a) 128GB","Nothing Phone (2) 128GB",0,
+"Canon EOS R50 with 18-45mm lens","Canon EOS R10 with 18-45mm lens",0,
+"HP DeskJet 2331 Printer","HP DeskJet 2332 Printer",0,
+"Apple iPad 10th Gen 64GB Wi-Fi","Apple iPad Air 11-inch M2 128GB Wi-Fi",0,
+"Sony PlayStation 5 Slim Disc Edition","Sony PlayStation 5 Slim Digital Edition",0,known hard: one word differs
+"Lenovo IdeaPad Slim 3 i5 12th Gen 16GB/512GB","Lenovo IdeaPad Slim 5 i5 12th Gen 16GB/512GB",0,
+"Samsung Galaxy A15 5G 128GB","Samsung Galaxy A25 5G 128GB",0,
+"boAt Rockerz 450 Headphones","boAt Rockerz 550 Headphones",0,
+"Apple MacBook Air M2 8GB 256GB","Apple MacBook Air M3 8GB 256GB",0,
+"Motorola Edge 50 Pro 256GB","Motorola Edge 50 Fusion 256GB",0,
+"LG 7 Kg Front Load Washing Machine FHM1207SDL","LG 8 Kg Front Load Washing Machine FHM1208SDL",0,
+"Vivo T3 5G 128GB","Vivo T3x 5G 128GB",0,
+"Apple iPhone 15 (128 GB) - Black","iPhone 15 Pro 128GB Black Titanium",0,
+"Samsung 253 L Refrigerator RT28C3053S8","Samsung 301 L Refrigerator RT34C4523S8",0,
+"Philips HL7756 750W Mixer","Philips HL7757 750W Mixer",0,
+"Crompton Hill Briz 1200mm Fan","Crompton Energion 1200mm BLDC Fan",0,
+"Sony WH-CH520 Wireless On-Ear Headphones Black","Sony WH-CH720N Wireless Noise Cancelling Headphones Black",0,

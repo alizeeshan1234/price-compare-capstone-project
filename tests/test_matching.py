@@ -89,7 +89,7 @@ def test_exact_match_outranks_partial_match_on_more_stores():
 
 def test_screen_size_does_not_leak_tokens_or_block_grouping():
     t = normalize("Apple iPhone 17e 256 GB: 15.40 cm (6.1″) Display")
-    assert "15" not in t and "40" not in t and "1540cm" in t
+    assert "15" not in t and "40" not in t and "15d40cm" in t
     a = O("amazon", "Apple iPhone 15 (128 GB) 15.49 cm Display", 69900)
     b = O("flipkart", "Apple iPhone 15 (Black, 128 GB) 15.5 cm", 67999)
     assert group_offers([a, b])[0].store_count == 2
@@ -238,3 +238,47 @@ def test_glass_is_only_an_accessory_in_a_phrase():
     t2 = "Tempered Glass Screen Protector for iPhone 15"
     assert is_accessory(normalize(t2), normalize("iphone 15"), t2)
     assert not is_accessory(normalize(t2), normalize("iphone 15 tempered glass"), t2)
+
+
+def test_single_digit_model_numbers_are_kept():
+    assert "6" in normalize("JBL Flip 6 Bluetooth Speaker")
+    assert group_offers([O("amazon", "JBL Flip 6 Bluetooth Speaker", 9999), O("flipkart", "JBL Flip 5 Bluetooth Speaker", 8999)])[0].store_count == 1
+    assert group_offers([O("amazon", "Apple Watch Series 9 GPS 45mm Midnight Aluminium Case", 41900),
+                         O("flipkart", "APPLE Watch Series 9 GPS 45 mm Midnight Aluminium", 40900)])[0].store_count == 2
+
+
+def test_four_digit_model_numbers_but_not_years():
+    assert group_offers([O("amazon", "HP DeskJet 2331 Printer", 4000), O("flipkart", "HP DeskJet 2332 Printer", 4100)])[0].store_count == 1
+    assert group_offers([O("amazon", "Redmi 13C 2024 Edition 128GB", 9000), O("flipkart", "Redmi 13C 128GB", 8900)])[0].store_count == 2
+
+
+def test_ram_and_storage_must_both_agree():
+    assert not specs_compatible(normalize("Dell 15 i5 8GB 512GB"), normalize("Dell 15 i5 16GB 512GB"))
+    assert specs_compatible(normalize("Galaxy S24 8GB RAM 256GB"), normalize("Galaxy S24 256GB"))
+
+
+def test_screen_sizes_compare_with_tolerance():
+    assert specs_compatible(normalize("Samsung 108 cm (43 inch) TV"), normalize("Samsung 43 inches TV 109 cm"))
+    assert not specs_compatible(normalize("Samsung 108 cm (43 inch) TV"), normalize("Samsung 138 cm (55 inch) TV"))
+    assert specs_compatible(normalize("iPhone 15 (15.49 cm)"), normalize("iPhone 15 15.5 cm (6.1 inch)"))
+    assert not specs_compatible(normalize("Apple Watch Series 9 45mm"), normalize("Apple Watch Series 9 41mm"))
+    assert "6" not in normalize("Dell 15.6 FHD Laptop")  # bare decimals are not model numbers
+
+
+def test_included_case_is_not_an_accessory():
+    assert not is_accessory(normalize("Apple AirPods Pro (2nd Generation) with MagSafe Case (USB-C)"), set(),
+                            "Apple AirPods Pro (2nd Generation) with MagSafe Case (USB-C)")
+    assert is_accessory(normalize("Spigen Case for iPhone 15"), set(), "Spigen Case for iPhone 15")
+
+
+def test_plus_sign_is_a_variant():
+    assert "plus" in normalize("Redmi Note 13 Pro+ 5G")
+    assert group_offers([O("amazon", "Redmi Note 13 Pro 5G 256GB", 20000), O("flipkart", "Redmi Note 13 Pro+ 5G 256GB", 26000)])[0].store_count == 1
+
+
+def test_fuzzy_tiebreaker_rescues_split_words():
+    from app.matching import fuzzy
+    a, b = normalize("Fire-Boltt Ninja Call Pro Plus 1.83 Smart Watch"), normalize("Fire Boltt Ninja Call Pro Plus Smartwatch 1.83 inch")
+    assert similarity(a, b) < 0.45 and fuzzy(a, b) >= 0.8
+    assert group_offers([O("amazon", "Fire-Boltt Ninja Call Pro Plus 1.83 Smart Watch", 1299),
+                         O("flipkart", "Fire Boltt Ninja Call Pro Plus Smartwatch 1.83 inch", 1199)])[0].store_count == 2
