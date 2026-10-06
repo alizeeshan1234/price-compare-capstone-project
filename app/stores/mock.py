@@ -11,13 +11,15 @@ from typing import List
 from .base import BaseStore, Offer
 
 VARIANTS = [("128GB", "Black"), ("256GB", "Blue"), ("128GB", "White"), ("512GB", "Green")]
-MULTIPLIER = {"amazon": 1.00, "flipkart": 0.97, "snapdeal": 1.04, "vijaysales": 0.94}
+MULTIPLIER = {"amazon": 1.00, "flipkart": 0.97, "snapdeal": 1.04, "vijaysales": 0.94, "croma": 0.99, "reliancedigital": 0.96}
 
 FORMATS = {
     "amazon": "{brand} {q} ({color}, {storage} Storage)",
     "flipkart": "{BRAND} {q} ({color}, {storage})",
     "snapdeal": "{q} {storage} {color} Smartphone",
     "vijaysales": "{brand} {q} ({storage} Storage, {color})",
+    "croma": "{brand} {q} {storage} {color}",
+    "reliancedigital": "{brand} {q} {storage}, {color}",
 }
 
 

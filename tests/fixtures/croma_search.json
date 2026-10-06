@@ -1,0 +1,9 @@
+{"products":[
+ {"code":"300680","name":"Apple iPhone 15 (128GB, Black)","url":"/apple-iphone-15-128gb-black/p/300680",
+  "price":{"currencyIso":"INR","value":69900.0,"formattedValue":"₹69,900.00"},"mrp":{"value":79900.0,"formattedValue":"₹79,900.00"},
+  "plpImage":"https://media.croma.com/image/upload/v1/Croma%20Assets/Communication/Mobiles/Images/300680_0_abc.png","averageRating":4.6},
+ {"code":"300683","name":"Apple iPhone 15 (256GB, Blue)","url":"/apple-iphone-15-256gb-blue/p/300683",
+  "price":{"currencyIso":"INR","value":0,"formattedValue":"₹79,900.00"},"plpImage":"https://media.croma.com/image/upload/v1/x/300683.png"},
+ {"code":"999999","name":"Listing without a price","url":"/x/p/999999","price":{"value":0,"formattedValue":""}},
+ {"code":"300690","name":"Apple 20W USB-C Power Adapter","url":"/apple-20w-usb-c-power-adapter/p/300690","price":{"value":1699.0},"images":[{"url":"https://media.croma.com/300690.png"}],"rating":"4.2"}
+],"pagination":{"currentPage":0,"pageSize":12,"totalResults":4}}

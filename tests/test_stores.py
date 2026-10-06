@@ -164,3 +164,40 @@ def test_fetch_html_reports_block(monkeypatch):
     monkeypatch.setattr(base.requests, "get", lambda url, **kw: R())
     with pytest.raises(base.StoreError, match="529.*blocked"):
         base.fetch_html("https://www.flipkart.com/search?q=tv")
+
+
+def test_reliancedigital_parses_embedded_state_and_skips_unsellable():
+    from app.stores.reliancedigital import RelianceDigitalStore
+    offers = RelianceDigitalStore().parse(load("reliancedigital_search.html"))
+    titles = [o.title for o in offers]
+    assert titles[0] == "Apple iPhone 15 128 GB Green"
+    assert offers[0].price == 59900.0  # effective (selling) price, not the marked price
+    assert offers[0].url == "https://www.reliancedigital.in/product/apple-iphone-15-128gb-green-lmiqm7-7533788/"
+    assert offers[0].image.startswith("https://cdn.jiostore.online/")
+    assert offers[0].rating is None  # the site reports 0 when there are no reviews
+    assert all("iPhone 16 Plus" not in t for t in titles)  # sellable: false is dropped
+    assert len(offers) == 4
+
+
+def test_reliancedigital_without_state_is_empty_not_an_error():
+    from app.stores.reliancedigital import RelianceDigitalStore
+    assert RelianceDigitalStore().parse("<html><body>reliancedigital.in maintenance</body></html>") == []
+
+
+def test_croma_parses_search_api_json():
+    from app.stores.croma import CromaStore
+    offers = CromaStore().parse(load("croma_search.json"))
+    assert [o.price for o in offers] == [69900.0, 79900.0, 1699.0]
+    assert offers[0].title == "Apple iPhone 15 (128GB, Black)"
+    assert offers[0].url == "https://www.croma.com/apple-iphone-15-128gb-black/p/300680"
+    assert offers[0].rating == 4.6 and offers[0].image.startswith("https://media.croma.com/")
+    assert offers[1].price == 79900.0  # falls back to the formatted value when value is 0
+    assert offers[2].image == "https://media.croma.com/300690.png" and offers[2].rating == 4.2
+
+
+def test_croma_blocked_page_raises():
+    from app.stores.croma import CromaStore
+    from app.stores.base import StoreError
+    with pytest.raises(StoreError, match="blocked"):
+        CromaStore().parse("<HTML><HEAD><TITLE>Access Denied</TITLE></HEAD></HTML>")
+    assert "api.croma.com/searchservices/v1/search" in CromaStore().search_url("iphone 15")

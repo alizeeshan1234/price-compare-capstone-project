@@ -27,6 +27,32 @@ class Offer:
     def to_dict(self) -> dict:
         return asdict(self)
 
+    @property
+    def key(self) -> str:
+        """Stable id for the listing across searches: store + canonical product URL."""
+        return f"{self.store}:{canonical_url(self.url)}"
+
+
+_ASIN = re.compile(r"/dp/([A-Z0-9]{10})")
+
+
+def canonical_url(url: str) -> str:
+    """Strip tracking so the same listing gets the same key every day.
+
+    Amazon: keep only the ASIN. Flipkart: keep the product id query parameter.
+    Everything else: drop the query string and trailing slash.
+    """
+    if not url:
+        return ""
+    m = _ASIN.search(url)
+    if m and "amazon" in url:
+        return f"https://www.amazon.in/dp/{m.group(1)}"
+    path, _, query = url.partition("?")
+    if "flipkart" in path:
+        pid = next((kv.split("=", 1)[1] for kv in query.split("&") if kv.startswith("pid=")), "")
+        return f"{path.rstrip('/')}?pid={pid}" if pid else path.rstrip("/")
+    return path.rstrip("/")
+
 
 HEADERS = {
     "User-Agent": (

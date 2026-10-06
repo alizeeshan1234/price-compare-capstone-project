@@ -10,9 +10,11 @@ from .amazon import AmazonStore
 from .flipkart import FlipkartStore
 from .snapdeal import SnapdealStore
 from .vijaysales import VijaySalesStore
+from .croma import CromaStore
+from .reliancedigital import RelianceDigitalStore
 from .mock import MockStore
 
-STORES: List[Type[BaseStore]] = [AmazonStore, FlipkartStore, SnapdealStore, VijaySalesStore]
+STORES: List[Type[BaseStore]] = [AmazonStore, FlipkartStore, SnapdealStore, VijaySalesStore, CromaStore, RelianceDigitalStore]
 
 
 def active_stores() -> List[BaseStore]:
