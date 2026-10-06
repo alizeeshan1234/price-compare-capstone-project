@@ -3,7 +3,7 @@ import re
 import time
 from dataclasses import dataclass, asdict
 from typing import List, Optional
-from urllib.parse import quote_plus
+from urllib.parse import quote, quote_plus
 
 import requests
 
@@ -91,28 +91,32 @@ def proxy_mode() -> str:
     return ""
 
 
-def _get(url: str) -> requests.Response:
+def _get(url: str, headers: Optional[dict] = None) -> requests.Response:
     """One HTTP GET, routed through the configured proxy if any."""
+    headers = dict(HEADERS, **(headers or {}))
     mode = proxy_mode()
     if mode == "api":
+        params = {"api_key": config.SCRAPER_API_KEY, "url": url, "country_code": config.PROXY_COUNTRY}
+        if headers.get("Accept", "").startswith("application/json"):
+            params["keep_headers"] = "true"  # forward our Accept header to JSON APIs
         return requests.get(
             "https://api.scraperapi.com/",
-            params={"api_key": config.SCRAPER_API_KEY, "url": url, "country_code": config.PROXY_COUNTRY},
-            headers={"Accept-Language": HEADERS["Accept-Language"]},
+            params=params,
+            headers={"Accept-Language": headers["Accept-Language"], "Accept": headers["Accept"]},
             timeout=config.PROXY_TIMEOUT,
         )
     if mode == "proxy":
         proxies = {"http": config.SCRAPER_PROXY_URL, "https": config.SCRAPER_PROXY_URL}
-        return requests.get(url, headers=HEADERS, proxies=proxies, timeout=config.PROXY_TIMEOUT)
-    return requests.get(url, headers=HEADERS, timeout=config.REQUEST_TIMEOUT)
+        return requests.get(url, headers=headers, proxies=proxies, timeout=config.PROXY_TIMEOUT)
+    return requests.get(url, headers=headers, timeout=config.REQUEST_TIMEOUT)
 
 
-def fetch_html(url: str) -> str:
+def fetch_html(url: str, headers: Optional[dict] = None) -> str:
     last = None
     retries = 1 if proxy_mode() == "api" else config.MAX_RETRIES  # the API retries internally
     for attempt in range(retries + 1):
         try:
-            r = _get(url)
+            r = _get(url, headers)
             if r.status_code == 200:
                 return r.text
             blocked = r.status_code in (403, 429, 500, 503, 529)
@@ -130,6 +134,7 @@ class BaseStore:
     name: str = "base"
     label: str = "Base"
     base_url: str = ""
+    headers: dict = {}  # extra request headers (JSON APIs set Accept)
 
     def search_url(self, query: str) -> str:
         raise NotImplementedError
@@ -138,7 +143,7 @@ class BaseStore:
         raise NotImplementedError
 
     def search(self, query: str, limit: int) -> List[Offer]:
-        html = fetch_html(self.search_url(query))
+        html = fetch_html(self.search_url(query), self.headers)
         offers = self.parse(html)
         if not offers and self.looks_blocked(html):
             raise StoreError("blocked (CAPTCHA or bot check page)")
@@ -158,3 +163,8 @@ class BaseStore:
     @staticmethod
     def q(query: str) -> str:
         return quote_plus(query.strip())
+
+    @staticmethod
+    def q_pct(query: str) -> str:
+        """Percent-encoded with %20 for spaces (some JSON APIs reject '+')."""
+        return quote(query.strip(), safe="")

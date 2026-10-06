@@ -51,7 +51,7 @@ class RelianceDigitalStore(BaseStore):
             image = next((m.get("url") for m in medias if isinstance(m, dict) and m.get("url")), None)
             rating = item.get("rating")
             try:
-                rating = float(rating) if rating else None
+                rating = round(float(rating), 1) if rating else None
             except (TypeError, ValueError):
                 rating = None
             offers.append(Offer(store=self.name, title=str(title).strip(), price=price,

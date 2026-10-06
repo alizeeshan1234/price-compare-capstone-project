@@ -15,10 +15,13 @@ class CromaStore(BaseStore):
     label = "Croma"
     base_url = "https://www.croma.com"
     api_url = "https://api.croma.com/searchservices/v1/search"
+    headers = {"Accept": "application/json, text/plain, */*", "Origin": "https://www.croma.com",
+               "Referer": "https://www.croma.com/"}
 
     def search_url(self, query: str) -> str:
-        return (f"{self.api_url}?currentPage=0&query={self.q(query)}%3Arelevance"
-                f"&fields=FULL&channel=WEB&channelCode=WEB&pageSize=12")
+        # channelCode is the web storefront's numeric id (the site sends 160047 / 400049).
+        return (f"{self.api_url}?currentPage=0&query={self.q_pct(query)}%3Arelevance"
+                f"&fields=FULL&channel=WEB&channelCode=160047&spellOpt=DEFAULT&pageSize=12")
 
     def looks_blocked(self, html: str) -> bool:
         return "access denied" in html.lower() or super().looks_blocked(html)
@@ -42,7 +45,7 @@ class CromaStore(BaseStore):
                 continue
             rating = p.get("averageRating") or p.get("rating")
             try:
-                rating = float(rating) if rating else None
+                rating = round(float(rating), 1) if rating else None
             except (TypeError, ValueError):
                 rating = None
             offers.append(Offer(store=self.name, title=str(title).strip(), price=price,

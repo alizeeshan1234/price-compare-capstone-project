@@ -38,8 +38,7 @@ def test_amazon_skips_sponsored_and_priceless():
 
 def test_amazon_blocked_page_raises(monkeypatch):
     from app.stores import base
-    monkeypatch.setattr(base, "fetch_html", lambda url: load("amazon_captcha.html"))
-    monkeypatch.setattr("app.stores.base.fetch_html", lambda url: load("amazon_captcha.html"))
+    monkeypatch.setattr("app.stores.base.fetch_html", lambda url, headers=None: load("amazon_captcha.html"))
     import app.stores.base as b
     store = AmazonStore()
     with pytest.raises(b.StoreError, match="blocked"):
@@ -200,4 +199,5 @@ def test_croma_blocked_page_raises():
     from app.stores.base import StoreError
     with pytest.raises(StoreError, match="blocked"):
         CromaStore().parse("<HTML><HEAD><TITLE>Access Denied</TITLE></HEAD></HTML>")
-    assert "api.croma.com/searchservices/v1/search" in CromaStore().search_url("iphone 15")
+    url = CromaStore().search_url("iphone 15")
+    assert "api.croma.com/searchservices/v1/search" in url and "iphone%2015%3Arelevance" in url
