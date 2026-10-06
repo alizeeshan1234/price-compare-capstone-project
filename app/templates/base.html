@@ -3,27 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}PriceWatch{% endblock %}</title>
+  <title>{% block title %}PriceCompare{% endblock %}</title>
   <link rel="stylesheet" href="/static/style.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏷️</text></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚖️</text></svg>">
 </head>
 <body>
 <header class="topbar">
-  <a class="brand" href="/">🏷️ PriceWatch</a>
-  <nav>
-    <a href="/" class="{% if request.url.path == '/' %}active{% endif %}">Products</a>
-    <a href="/status" class="{% if request.url.path == '/status' %}active{% endif %}">Status</a>
-    <a href="/docs" target="_blank" rel="noopener">API</a>
-  </nav>
-  <div class="badges">
-    {% if mock_mode %}<span class="badge warn" title="MOCK_SCRAPER=1: prices are simulated">Mock mode</span>{% endif %}
-    <span class="badge {% if telegram_on %}ok{% else %}muted{% endif %}">Telegram {% if telegram_on %}on{% else %}off{% endif %}</span>
-  </div>
+  <a class="brand" href="/">⚖️ PriceCompare</a>
+  <nav><a href="/docs" target="_blank" rel="noopener">API</a></nav>
+  {% if mock_mode %}<span class="badge warn" title="MOCK_STORES=1: results are simulated">Demo mode</span>{% endif %}
 </header>
-<main class="container">
-  {% block content %}{% endblock %}
-</main>
-<footer class="footer">PriceWatch · multi-store price tracking with alerts</footer>
-{% block scripts %}{% endblock %}
+<main class="container">{% block content %}{% endblock %}</main>
+<footer class="footer">Searches Amazon, Flipkart, Snapdeal and Vijay Sales in parallel and matches the same product across stores.</footer>
 </body>
 </html>

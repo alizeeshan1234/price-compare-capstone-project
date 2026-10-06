@@ -1,0 +1,10 @@
+{"searchMetaData": {"status": 0, "queryParams": {"q": "iphone 15"}},
+ "response": {"numberOfProducts": 3, "start": 0, "products": [
+  {"uniqueId": "220949", "title": "Apple iPhone 15 (128GB Storage, Blue)", "price": 59900, "brand": ["Apple"],
+   "productUrl": "https://www.vijaysales.com/p/P220946/220949/apple-iphone-15-128gb-storage-blue",
+   "imageUrl": ["https://vsprod.vijaysales.com/media/catalog/product/2/2/220949-image1_2.jpg"],
+   "cityId_10_sellingPrice_unx_d": 58990, "cityId_11_sellingPrice_unx_d": 59900},
+  {"uniqueId": "220946", "title": "Apple iPhone 15 (128GB Storage, Black)", "price": "59900", "sellingPrice": "57900",
+   "productUrl": "/p/P220946/220946/apple-iphone-15-128gb-storage-black", "imageUrl": "https://vsprod.vijaysales.com/x.jpg"},
+  {"uniqueId": "999", "title": "Apple iPhone 15 Silicone Case", "productUrl": "https://www.vijaysales.com/p/999"}
+ ]}, "facets": {}}

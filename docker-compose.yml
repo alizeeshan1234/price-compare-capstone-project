@@ -1,13 +1,12 @@
 services:
   web:
     build: .
-    ports:
-      - "8000:8000"
+    ports: ["8000:8000"]
     env_file: .env
     environment:
-      DATABASE_URL: sqlite:////data/pricewatch.db
+      DATABASE_PATH: /data/pricecompare.db
     volumes:
-      - pricewatch-data:/data
+      - pc-data:/data
     restart: unless-stopped
 volumes:
-  pricewatch-data:
+  pc-data:

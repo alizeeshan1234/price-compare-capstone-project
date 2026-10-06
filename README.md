@@ -1,173 +1,138 @@
-# PriceWatch
+# PriceCompare
 
-A self-hosted, multi-store price tracker with Telegram alerts. Paste a product URL and a
-target price; PriceWatch checks the page on a schedule, keeps the full price history, charts
-it, tells you whether now is a good time to buy, and messages you the moment the price drops
-below your target.
+Type a product name once. PriceCompare searches Amazon, Flipkart, Snapdeal and Vijay Sales at
+the same time, works out which listings are the same product, and shows the prices side by
+side with the cheapest highlighted and the amount you save.
 
-Built as a college capstone project to show a small but complete production-style system:
-pluggable scrapers, scheduled jobs, persistence, alerting, a dashboard, health monitoring,
-tests, and containerised deployment.
+```
+iphone 15  ──►  Amazon   Flipkart   Snapdeal   Vijay Sales  You save
+iPhone 15 128GB Black   ₹69,900   ₹66,999 ★   ₹68,490    ₹70,499     ₹3,500 (5%)
+iPhone 15 256GB Blue    ₹79,900   ₹76,999 ★      —          —        ₹2,901 (4%)
+```
 
-## Features
-
-- **Multi-store scraping** via a plugin architecture. Dedicated adapters for Amazon and
-  Flipkart, plus a generic adapter that reads JSON-LD, Open Graph and microdata, so most
-  other stores work with zero extra code. Adding a store is one small class.
-- **Scheduled checks** with APScheduler, polite delays between requests, retries with
-  exponential backoff, and CAPTCHA / rate-limit detection.
-- **Price history and analytics**: current, lowest, highest, average, last change, and a
-  Buy now / Good price / Fair / Wait recommendation based on the product's own history.
-- **Telegram alerts** when the price reaches the target, with a cooldown so you are not
-  spammed, and re-alerting if the price keeps falling.
-- **Health monitoring**: per-product status, success rate, average fetch time, recent scrape
-  log, and a scheduler view. Broken scrapers are visible instead of silently failing.
-- **Dashboard** with Chart.js price charts, dark-mode support, and a JSON API for a future
-  mobile or React frontend.
-- **Mock mode** for demos and development that never touches real sites.
-- **Tests** that run offline against saved HTML fixtures.
-- **Docker** image and compose file for one-command deployment.
-
-## Quick start
+## Run it
 
 ```bash
-git clone <this repo> && cd price-tracker
-make install                 # creates .venv and installs requirements
-cp .env.example .env         # optional: add Telegram token + chat id
-make dev                     # http://localhost:8000
+make install            # virtualenv + dependencies
+make dev                # http://localhost:8000  (real scraping)
+make demo               # simulated stores: works offline, good for presentations
+make test               # offline tests against saved HTML pages
 ```
 
-Demo with 30 days of generated history and simulated prices:
+Optional: copy `.env.example` to `.env` to change the cache lifetime, results per store, or
+switch demo mode on.
 
-```bash
-make demo
-```
+## How it works
 
-Run the tests:
-
-```bash
-make test
-```
-
-## Telegram setup
-
-1. Message `@BotFather` on Telegram, send `/newbot`, copy the token.
-2. Send any message to your new bot.
-3. Open `https://api.telegram.org/bot<TOKEN>/getUpdates` and copy `chat.id`.
-4. Put both values in `.env` as `TELEGRAM_TOKEN` and `TELEGRAM_CHAT_ID`.
-
-Without these set, alerts are still recorded in the database and shown in the UI; they are
-just not delivered.
-
-## Configuration
-
-| Variable | Default | Meaning |
-|---|---|---|
-| `DATABASE_URL` | `sqlite:///./pricewatch.db` | Any SQLAlchemy URL; use PostgreSQL in production |
-| `CHECK_INTERVAL_MINUTES` | `360` | How often every product is re-checked |
-| `SCRAPE_DELAY_SECONDS` | `3` | Pause between products in a scheduled run |
-| `ALERT_COOLDOWN_HOURS` | `24` | Minimum gap between alerts for the same product |
-| `TELEGRAM_TOKEN` / `TELEGRAM_CHAT_ID` | empty | Alert delivery |
-| `MOCK_SCRAPER` | `0` | `1` returns simulated prices |
-
-## Architecture
-
-```
-                 +-----------------+
-   browser  <--> |  FastAPI (app)  | <--> SQLite / PostgreSQL
-                 +--------+--------+        products, price_history,
-                          |                 alerts, scrape_logs
-            +-------------+--------------+
-            |                            |
-   +--------v--------+        +----------v---------+
-   |  APScheduler    |        |   services.py      |
-   |  every N mins   | -----> |  check_product()   |
-   +-----------------+        |  maybe_alert()     |
-                              +----------+---------+
-                                         |
-                      +------------------+------------------+
-                      |                                     |
-            +---------v----------+                +---------v---------+
-            | scraper/registry   |                |  notifier.py      |
-            | amazon | flipkart  |                |  Telegram Bot API |
-            | generic | mock     |                +-------------------+
-            +--------------------+
-```
-
-- `app/scraper/base.py` defines the adapter interface, HTTP fetching with retries, and
-  price parsing helpers.
-- `app/scraper/registry.py` picks an adapter from the URL. Adding a store means adding a
-  class with a `domains` tuple and a `parse(html, url)` method, then listing it here.
-- `app/services.py` is the only place business rules live: adding products, recording
-  prices, logging attempts, and deciding when to alert.
-- `app/scheduler.py` runs `check_all_products` on an interval.
-- `app/main.py` holds the web routes and JSON API.
+1. **Parallel search.** Every store adapter fetches results (HTML for Amazon, Flipkart and
+   Snapdeal; Vijay Sales exposes the JSON search API its own site uses), retries on transient
+   errors, and parses listings into a common `Offer`
+   (store, title, price, url, image, rating). A thread pool runs all stores at once, so a
+   search takes as long as the slowest store, not the sum.
+2. **Resilience.** A store that blocks, times out or changes its HTML fails on its own. Its
+   column shows "failed" with the reason and the other stores still render.
+3. **Matching and ranking.** Titles are normalised ("128 GB" becomes `128gb`, filler words removed) and
+   compared with Jaccard similarity. Listings whose specs contradict each other (128GB vs
+   256GB) are never merged. Greedy clustering, cheapest first, produces one row per product.
+   Listings sharing fewer than half the query's words are dropped, accessories (cases,
+   chargers) sink to the bottom, and rows are ranked by match quality, then by how many
+   stores carry the product.
+4. **Side-by-side table.** One column per store, the lowest price per row highlighted, plus
+   the saving between the most and least expensive store.
+5. **Cache and health.** Results are cached in SQLite for three hours so repeat searches are
+   instant and the stores are not hammered. Every live search is logged, which powers the
+   store-health table (success rate, average time, average results).
 
 ## Project layout
 
 ```
 app/
-  main.py          routes and JSON API
-  config.py        settings from environment
-  database.py      SQLAlchemy engine/session
-  models.py        Product, PriceHistory, Alert, ScrapeLog
-  services.py      business logic
-  scheduler.py     background job
-  notifier.py      Telegram
-  analytics.py     recommendation / percentiles
-  scraper/         adapters + registry
-  templates/       Jinja2 pages
-  static/          CSS
-tests/             pytest suite + HTML fixtures
-scripts/           seed_demo.py
+  main.py          routes: /  /api/search  /api/health
+  search.py        cache -> stores -> grouping
+  matching.py      title normalisation + cross-store grouping
+  cache.py         SQLite cache and search log
+  config.py        environment settings
+  stores/
+    base.py        Offer, fetch_html, parse helpers, BaseStore
+    amazon.py  flipkart.py  snapdeal.py  vijaysales.py
+    mock.py        simulated stores for demos
+    registry.py    STORES list + concurrent search
+  templates/       Jinja2 pages        static/  CSS
+tests/             pytest + fixtures/ (saved search pages)
 ```
 
 ## Adding a store
 
 ```python
-# app/scraper/mystore.py
+# app/stores/croma.py
 from bs4 import BeautifulSoup
-from .base import BaseScraper, ScrapeResult, ScrapeError, parse_price
+from .base import BaseStore, Offer, parse_price
 
-class MyStoreScraper(BaseScraper):
-    name = "mystore"
-    domains = ("mystore.com",)
+class CromaStore(BaseStore):
+    name, label, base_url = "croma", "Croma", "https://www.croma.com"
 
-    def parse(self, html, url):
+    def search_url(self, query):
+        return f"{self.base_url}/searchB?q={self.q(query)}"
+
+    def parse(self, html):
         soup = BeautifulSoup(html, "lxml")
-        price = soup.select_one(".price")
-        if not price:
-            raise ScrapeError("price not found")
-        return ScrapeResult(title=soup.select_one("h1").get_text(strip=True),
-                            price=parse_price(price.get_text()))
+        out = []
+        for item in soup.select(".product-item"):
+            title, price, link = item.select_one(".product-title"), item.select_one(".amount"), item.select_one("a[href]")
+            if title and price and link and parse_price(price.get_text()):
+                out.append(Offer(self.name, title.get_text(strip=True), parse_price(price.get_text()), self.absolute(link["href"])))
+        return out
 ```
 
-Then add `MyStoreScraper` to `SCRAPERS` in `registry.py` before `GenericScraper`, save a
-sample page to `tests/fixtures/`, and write a test.
+Add the class to `STORES` in `registry.py`, save a search page to `tests/fixtures/`, write a
+test. Nothing else changes.
 
-## Deployment
+## Known limits
+
+- Amazon and Flipkart actively block scrapers. Expect occasional failures, which the UI
+  shows honestly. Caching reduces how often they are hit. Swapping `fetch_html` for a
+  Playwright-driven browser would raise the success rate at the cost of speed.
+- Store HTML changes over time. The fixture tests make a selector fix a five-minute job.
+- Prices exclude delivery charges and bank offers.
+- Matching is heuristic. It is tuned for electronics with clear specs; vague titles
+  (fashion, groceries) group less reliably.
+
+## Ethics
+
+Only public search pages are read, at a low rate, with a cache, and never past a CAPTCHA.
+Check each store's terms before deploying publicly.
+
+## Deploy
+
+### Vercel (zero config)
+
+The repo includes `main.py` and `vercel.json` so Vercel's FastAPI preset picks the app up
+automatically. The SQLite cache lives in `/tmp` on Vercel, so it resets when the function is
+recycled, which is fine for a demo.
 
 ```bash
-cp .env.example .env   # fill in values
-docker compose up --build -d
+vercel          # preview (requires Vercel login to view)
+vercel --prod   # public URL
 ```
 
-The compose file persists the SQLite database in a named volume. For a public deployment,
-point `DATABASE_URL` at PostgreSQL and put the app behind a reverse proxy with HTTPS.
+**Datacenter IPs get blocked.** Amazon, Flipkart and Snapdeal refuse requests from Vercel's
+servers (HTTP 503 / 529 / 403). Vijay Sales' search API is not affected. The fix is a scraping
+proxy with residential IPs:
 
-## Ethics and limits
+```bash
+# free key from https://www.scraperapi.com (about 1,000 credits/month on the free tier)
+vercel env add SCRAPER_API_KEY production
+vercel deploy --prod
+```
 
-- Check each site's `robots.txt` and terms before tracking it. Keep the interval generous.
-- The scraper identifies itself with a normal browser user agent and never bypasses
-  CAPTCHAs; when one is detected the check is logged as a failure.
-- Store selectors change over time. The status page makes this visible, and the fixture
-  tests make the fix a five-minute job.
+With the key set, the three HTML stores are fetched through ScraperAPI and all four columns
+fill in. Any other HTTP proxy works through `SCRAPER_PROXY_URL` instead. Without either, the
+UI explains which stores failed and still shows the rest. `MOCK_STORES=1` gives a guaranteed
+simulated demo.
 
-## Metrics to report
+### Docker
 
-PriceWatch records everything needed for an evaluation section:
-
-- Scraper success rate per store (`/status`, `/api/health`)
-- Average fetch latency
-- Number of alerts fired and delivered
-- Savings found: first observed price minus lowest observed price, summed across products
+```bash
+cp .env.example .env
+docker compose up --build -d
+```

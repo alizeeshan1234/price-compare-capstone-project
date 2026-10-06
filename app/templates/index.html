@@ -1,62 +1,122 @@
 {% extends "base.html" %}
-{% block title %}Products · PriceWatch{% endblock %}
+{% block title %}{% if q %}{{ q }} · {% endif %}PriceCompare{% endblock %}
 {% block content %}
 
-<section class="stats">
-  <div class="stat"><span class="label">Tracked</span><span class="value">{{ health.products }}</span></div>
-  <div class="stat"><span class="label">Success rate ({{ health.days }}d)</span>
-    <span class="value">{% if health.success_rate is not none %}{{ "%.0f"|format(health.success_rate) }}%{% else %}—{% endif %}</span></div>
-  <div class="stat"><span class="label">Alerts ({{ health.days }}d)</span><span class="value">{{ health.alerts }}</span></div>
-  <div class="stat"><span class="label">Savings found</span><span class="value">{{ savings|money("INR") }}</span></div>
-</section>
-
-<section class="card">
-  <h2>Track a product</h2>
-  {% if error %}<p class="alert error">{{ error }}</p>{% endif %}
-  <form method="post" action="/products" class="row-form">
-    <input type="url" name="url" placeholder="https://www.amazon.in/dp/... or any product page" required>
-    <input type="number" name="target_price" placeholder="Target price" min="1" step="0.01" required>
-    <button type="submit">Track</button>
+<section class="hero {% if result %}compact{% endif %}">
+  {% if not result %}<h1>Find the best price, everywhere.</h1>
+  <p class="lead">Type a product. We search every store at once and line the prices up side by side.</p>{% endif %}
+  <form method="get" action="/" class="search">
+    <input type="search" name="q" value="{{ q }}" placeholder="e.g. iPhone 15 128GB, Sony WH-1000XM5, Boat Airdopes" autofocus required minlength="2" maxlength="120">
+    <button type="submit">Compare</button>
   </form>
-  <p class="hint">Supports Amazon and Flipkart with dedicated adapters, and any store that publishes structured product data.
-    Checks run every {{ interval }} minutes{% if next_run %}; next at {{ next_run.strftime("%H:%M UTC") }}{% endif %}.</p>
+  {% if not result and recent %}
+    <p class="recent">Recent: {% for r in recent %}<a href="/?q={{ r|urlencode }}">{{ r }}</a>{% endfor %}</p>
+  {% endif %}
 </section>
 
-<section class="card">
-  <div class="card-head">
-    <h2>Tracked products</h2>
-    <form method="post" action="/check-all"><button class="secondary" type="submit">Check all now</button></form>
-  </div>
-  {% if not products %}
-    <p class="empty">Nothing tracked yet. Add a product above.</p>
+{% if result %}
+  {% set cheapest = result.cheapest %}
+  <section class="summary">
+    <div class="stat"><span class="label">Stores searched</span><span class="value">{{ result.ok_stores|length }}/{{ result.stores|length }}</span></div>
+    <div class="stat"><span class="label">Offers found</span><span class="value">{{ result.offers|length }}</span></div>
+    <div class="stat"><span class="label">Products matched</span><span class="value">{{ result.groups|length }}</span></div>
+    <div class="stat best">
+      <span class="label">Lowest price</span>
+      {% if cheapest %}<span class="value">{{ cheapest.price|money(cheapest.currency) }}</span>
+      <span class="sub">{{ cheapest.title|truncate(42) }} · {{ store_labels[cheapest.store] }}</span>{% else %}<span class="value">—</span>{% endif %}
+    </div>
+  </section>
+
+  <p class="storeline">
+    {% for s in result.stores.values() %}
+      <span class="chip {{ 'ok' if s.ok else 'fail' }}" title="{{ s.error or (s.duration_ms ~ ' ms') }}">
+        {{ s.label }}: {% if s.ok %}{{ s.offers|length }} result{{ 's' if s.offers|length != 1 }}{% if s.cached %} (cached){% endif %}{% else %}failed{% endif %}
+      </span>
+    {% endfor %}
+    <a class="refresh" href="/?q={{ q|urlencode }}&refresh=1">↻ Refresh prices</a>
+  </p>
+  {% for s in result.failed_stores %}
+    <p class="alert error"><strong>{{ s.label }}</strong> could not be searched: {{ s.error }}. Other stores are shown.</p>
+  {% endfor %}
+  {% if result.failed_stores and hosted and not proxy_mode %}
+    <p class="alert warn">This hosted copy runs on cloud servers, which some stores block. Set <code>SCRAPER_API_KEY</code> on the host to route those stores through a residential proxy.</p>
+  {% endif %}
+
+  {% if result.groups %}
+  <section class="card">
+    <h2>Side-by-side comparison</h2>
+    <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr><th>Product</th>{% for s in stores %}<th class="num">{{ store_labels[s] }}</th>{% endfor %}<th class="num">You save</th></tr>
+      </thead>
+      <tbody>
+      {% for g in result.groups %}
+        {% set best = g.cheapest %}
+        <tr class="{% if g.store_count > 1 %}multi{% endif %}">
+          <td class="title">
+            {% if best.image %}<img src="{{ best.image }}" alt="" loading="lazy">{% endif %}
+            <div><a href="{{ best.url }}" target="_blank" rel="noopener">{{ g.title }}</a>
+            <span class="muted">{{ g.store_count }} store{{ 's' if g.store_count != 1 }}{% if best.rating %} · ★ {{ best.rating }}{% endif %}{% if g.accessory %} · <em>accessory</em>{% endif %}</span></div>
+          </td>
+          {% for s in stores %}
+            {% set o = g.by_store.get(s) %}
+            <td class="num {% if o and o.price == best.price %}best{% endif %}">
+              {% if o %}<a href="{{ o.url }}" target="_blank" rel="noopener">{{ o.price|money(o.currency) }}</a>
+              {% if o.price == best.price and g.store_count > 1 %}<span class="tag">lowest</span>{% endif %}
+              {% else %}<span class="muted">—</span>{% endif %}
+            </td>
+          {% endfor %}
+          <td class="num">{% if g.store_count > 1 and g.savings > 0 %}<strong class="good">{{ g.savings|money(best.currency) }}</strong>
+            <span class="muted">({{ "%.0f"|format(g.savings_pct) }}%)</span>{% else %}<span class="muted">—</span>{% endif %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    <p class="hint">Rows are products matched across stores by title and specs, ranked by how many stores carry them and how closely they match your search; accessories sink to the bottom. Highlighted cell is the lowest price for that product. Prices exclude delivery.</p>
+  </section>
   {% else %}
-  <table>
-    <thead>
-      <tr><th>Product</th><th>Store</th><th class="num">Current</th><th class="num">Target</th><th class="num">Lowest</th><th>Status</th><th></th></tr>
-    </thead>
+    <section class="card"><p class="empty">
+      {% if not result.ok_stores %}Every store refused the request this time, which usually means the stores are rate-limiting the server's IP address.
+      Try <a href="/?q={{ q|urlencode }}&refresh=1">refreshing</a> in a moment.{% else %}No matching products. Try a more specific product name.{% endif %}</p></section>
+  {% endif %}
+
+  <section class="card">
+    <h2>All results by store</h2>
+    <div class="columns">
+      {% for s in result.stores.values() %}
+      <div class="col">
+        <h3>{{ s.label }} <span class="muted">({{ s.offers|length }})</span></h3>
+        {% for o in s.offers|sort(attribute='price') %}
+          <a class="offer" href="{{ o.url }}" target="_blank" rel="noopener">
+            {% if o.image %}<img src="{{ o.image }}" alt="" loading="lazy">{% endif %}
+            <span class="offer-title">{{ o.title }}</span>
+            <span class="offer-price">{{ o.price|money(o.currency) }}{% if o.rating %} <small>★ {{ o.rating }}</small>{% endif %}</span>
+          </a>
+        {% else %}
+          <p class="empty">{% if s.ok %}No matches.{% else %}Unavailable.{% endif %}</p>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+{% endif %}
+
+{% if health %}
+<section class="card health">
+  <h2>Store health <span class="muted">(last 7 days)</span></h2>
+  <table class="compact">
+    <thead><tr><th>Store</th><th class="num">Searches</th><th class="num">Success</th><th class="num">Avg time</th><th class="num">Avg results</th></tr></thead>
     <tbody>
-    {% for p in products %}
-      <tr>
-        <td><a href="/products/{{ p.id }}" class="title">{{ p.title }}</a></td>
-        <td><span class="pill">{{ p.store }}</span></td>
-        <td class="num {% if p.current_price is not none and p.current_price <= p.target_price %}good{% endif %}">{{ p.current_price|money(p.currency) }}</td>
-        <td class="num">{{ p.target_price|money(p.currency) }}</td>
-        <td class="num">{{ p.lowest_price|money(p.currency) }}</td>
-        <td>
-          {% if p.last_error %}<span class="badge bad" title="{{ p.last_error }}">error</span>
-          {% elif p.in_stock is sameas false %}<span class="badge warn">out of stock</span>
-          {% elif p.current_price is not none and p.current_price <= p.target_price %}<span class="badge ok">below target</span>
-          {% else %}<span class="badge muted">watching</span>{% endif %}
-        </td>
-        <td class="actions">
-          <form method="post" action="/products/{{ p.id }}/delete" onsubmit="return confirm('Stop tracking this product?')">
-            <button class="danger small" type="submit">Remove</button>
-          </form>
-        </td>
-      </tr>
+    {% for h in health %}
+      <tr><td>{{ store_labels.get(h.store, h.store) }}</td><td class="num">{{ h.attempts }}</td>
+        <td class="num {% if h.success_rate is not none and h.success_rate < 50 %}bad{% endif %}">{% if h.success_rate is not none %}{{ "%.0f"|format(h.success_rate) }}%{% else %}—{% endif %}</td>
+        <td class="num">{% if h.avg_ms %}{{ h.avg_ms }} ms{% else %}—{% endif %}</td>
+        <td class="num">{{ h.avg_count if h.avg_count is not none else "—" }}</td></tr>
     {% endfor %}
     </tbody>
   </table>
-  {% endif %}
 </section>
+{% endif %}
 {% endblock %}

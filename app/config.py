@@ -1,26 +1,23 @@
-"""Application settings loaded from environment variables / .env file."""
+"""Settings from environment / .env."""
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
+MOCK_STORES: bool = os.getenv("MOCK_STORES", "0") == "1"
+CACHE_TTL_MINUTES: int = int(os.getenv("CACHE_TTL_MINUTES", "180"))
+RESULTS_PER_STORE: int = int(os.getenv("RESULTS_PER_STORE", "12"))
+# On Vercel (and most serverless hosts) only /tmp is writable, so the cache lives there.
+_default_db = "/tmp/pricecompare.db" if os.getenv("VERCEL") else "./pricecompare.db"
+DATABASE_PATH: str = os.getenv("DATABASE_PATH", _default_db)
+REQUEST_TIMEOUT: int = 15
+MAX_RETRIES: int = 2
 
-def _int(name: str, default: int) -> int:
-    try:
-        return int(os.getenv(name, default))
-    except ValueError:
-        return default
-
-
-DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./pricewatch.db")
-CHECK_INTERVAL_MINUTES: int = _int("CHECK_INTERVAL_MINUTES", 360)
-SCRAPE_DELAY_SECONDS: int = _int("SCRAPE_DELAY_SECONDS", 3)
-TELEGRAM_TOKEN: str = os.getenv("TELEGRAM_TOKEN", "")
-TELEGRAM_CHAT_ID: str = os.getenv("TELEGRAM_CHAT_ID", "")
-MOCK_SCRAPER: bool = os.getenv("MOCK_SCRAPER", "0") == "1"
-
-# Do not re-send an alert for the same product within this window.
-ALERT_COOLDOWN_HOURS: int = _int("ALERT_COOLDOWN_HOURS", 24)
-
-REQUEST_TIMEOUT_SECONDS: int = 15
-MAX_RETRIES: int = 3
+# Stores block datacenter IPs (Vercel, AWS...). A scraping proxy with residential IPs fixes
+# that. Set one of these and HTML fetches for the store pages go through it:
+#   SCRAPER_API_KEY   - key from scraperapi.com (free tier available); API mode
+#   SCRAPER_PROXY_URL - any HTTP(S) proxy URL, e.g. http://user:pass@host:port
+SCRAPER_API_KEY: str = os.getenv("SCRAPER_API_KEY", "").strip()
+SCRAPER_PROXY_URL: str = os.getenv("SCRAPER_PROXY_URL", "").strip()
+PROXY_TIMEOUT: int = int(os.getenv("PROXY_TIMEOUT", "60"))
+PROXY_COUNTRY: str = os.getenv("PROXY_COUNTRY", "in")
