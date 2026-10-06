@@ -8,3 +8,4 @@ docker-compose.yml
 Makefile
 .env
 evaluation
+docs

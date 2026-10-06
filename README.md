@@ -13,6 +13,16 @@ iPhone 15 256GB Blue    ₹79,900  ₹76,999 ★      —          —       ₹
 
 Live copy: https://price-compare-alpha-lime.vercel.app
 
+![Search results with the side-by-side comparison](docs/results.png)
+
+<details><summary>More screenshots (home, dark mode, alerts, mobile)</summary>
+
+![Home page](docs/home.png)
+![Dark mode](docs/results-dark.png)
+![Price-drop alerts](docs/alerts.png)
+
+</details>
+
 ## Run it
 
 ```bash

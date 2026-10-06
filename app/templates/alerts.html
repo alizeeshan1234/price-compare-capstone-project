@@ -5,8 +5,9 @@
   <h1 class="page-title">Price-drop alerts</h1>
   <p class="lead">Watch a product and get an email when any store drops below your target. Prices are re-checked by a scheduled job{% if hosted %} once a day{% endif %}.</p>
   <form method="get" action="/alerts" class="search">
-    <input type="email" name="email" value="{{ email }}" placeholder="Show alerts for this email" required>
-    <button type="submit">Show</button>
+    <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg></span>
+    <input type="email" name="email" value="{{ email }}" placeholder="Show alerts for this email" required aria-label="Email">
+    <button type="submit">Show alerts</button>
   </form>
 </section>
 
@@ -16,7 +17,7 @@
 
 {% if email %}
 <section class="card">
-  <h2>Alerts for {{ email }} <span class="muted">({{ alerts|length }})</span></h2>
+  <h2>Alerts for {{ email }} <span class="muted">{{ alerts|length }}</span></h2>
   {% if alerts %}
   <div class="table-wrap">
   <table class="compact alerts">
@@ -24,12 +25,12 @@
     <tbody>
     {% for a in alerts %}
       <tr>
-        <td><a href="{{ a.url }}" target="_blank" rel="noopener">{{ a.title|truncate(60) }}</a><br><span class="muted">search: <a href="/?q={{ a.query|urlencode }}">{{ a.query }}</a> · set {{ a.created_at[:10] }}</span></td>
+        <td><a href="{{ a.url }}" target="_blank" rel="noopener"><strong>{{ a.title|truncate(60) }}</strong></a><br><span class="muted">search: <a href="/?q={{ a.query|urlencode }}">{{ a.query }}</a> · set {{ a.created_at[:10] }}</span></td>
         <td>{{ store_labels.get(a.store, a.store) }}</td>
         <td class="num">{{ a.price_at_creation|money }}</td>
-        <td class="num">{{ a.target_price|money }}</td>
+        <td class="num"><strong>{{ a.target_price|money }}</strong></td>
         <td class="num">{% if a.last_price %}{{ a.last_price|money }}<br><span class="muted">{{ a.last_checked_at[:16]|replace('T', ' ') }}</span>{% elif a.last_checked_at %}<span class="muted">not listed</span>{% else %}<span class="muted">not checked yet</span>{% endif %}</td>
-        <td>{% if a.triggered_at %}<span class="badge good">Triggered at {{ a.triggered_price|money }}</span><br><span class="muted">{{ a.triggered_at[:10] }} · {{ 'emailed' if a.notified_via == 'email' else 'recorded (email not configured)' }}</span>{% else %}<span class="badge">Watching</span>{% endif %}</td>
+        <td>{% if a.triggered_at %}<span class="status-pill good">Triggered at {{ a.triggered_price|money }}</span><br><span class="muted">{{ a.triggered_at[:10] }} · {{ 'emailed' if a.notified_via == 'email' else 'recorded (email not configured)' }}</span>{% else %}<span class="status-pill">Watching</span>{% endif %}</td>
         <td><form method="post" action="/alerts/{{ a.id }}/delete"><input type="hidden" name="email" value="{{ email }}"><button class="link" type="submit">Remove</button></form></td>
       </tr>
     {% endfor %}
@@ -42,8 +43,12 @@
 
 <section class="card">
   <h2>How it works</h2>
-  <p class="hint">Every alert remembers the exact listing you watched. The checker re-searches the stores, finds that listing (or the same product in another store), and compares the lowest price with your target.
-  {% if can_run %}<form method="post" action="/alerts/run" class="inline"><button type="submit">Run the check now</button></form>{% endif %}</p>
+  <div class="steps">
+    <div class="step"><span class="n">1</span><b>Pick a product</b>Search, then press 🔔 Alert on any row and set the price you want to pay.</div>
+    <div class="step"><span class="n">2</span><b>We keep checking</b>A scheduled job re-searches every store and follows the exact listing, or the same product elsewhere.</div>
+    <div class="step"><span class="n">3</span><b>You get an email</b>The moment a store goes at or below your target, you get a link to buy it.</div>
+  </div>
+  {% if can_run %}<form method="post" action="/alerts/run" class="inline" style="display:block;margin-top:14px"><input type="hidden" name="email" value="{{ email }}"><button class="btn ghost small" type="submit">Run the check now</button></form>{% endif %}
   {% if run_summary %}<pre class="result">{{ run_summary }}</pre>{% endif %}
 </section>
 {% endblock %}

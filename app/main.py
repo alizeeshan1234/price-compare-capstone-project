@@ -52,7 +52,7 @@ def money(value: Optional[float], code: str = "INR") -> str:
     return f"{SYMBOLS.get(code, code + ' ')}{value:,.0f}"
 
 
-def sparkline(history: List[Tuple[str, float]], width: int = 96, height: int = 26) -> Markup:
+def sparkline(history: List[Tuple[str, float]], width: int = 84, height: int = 24) -> Markup:
     """Inline SVG line of daily prices; the last point is highlighted."""
     if len(history) < 2:
         return Markup("")

@@ -1,10 +1,10 @@
 {# One store's results. Expects `s` (StoreResult). #}
-<h3>{{ s.label }} <span class="muted">({{ s.offers|length }}{% if s.cached %}, cached{% endif %})</span></h3>
+<h3>{{ s.label }} <span class="muted">{{ s.offers|length }}{% if s.cached %} · cached{% endif %}</span></h3>
 {% for o in s.offers|sort(attribute='price') %}
   <a class="offer" href="{{ o.url }}" target="_blank" rel="noopener">
-    {% if o.image %}<img src="{{ o.image }}" alt="" loading="lazy">{% endif %}
+    {% if o.image %}<img src="{{ o.image }}" alt="" loading="lazy">{% else %}<span class="thumb-empty"></span>{% endif %}
     <span class="offer-title">{{ o.title }}</span>
-    <span class="offer-price">{{ o.price|money(o.currency) }}{% if o.rating %} <small>★ {{ o.rating }}</small>{% endif %}</span>
+    <span class="offer-price">{{ o.price|money(o.currency) }}{% if o.rating %} <small><span class="stars">★</span> {{ o.rating }}</small>{% endif %}</span>
   </a>
 {% else %}
   <p class="empty">{% if s.ok %}No matches.{% else %}Unavailable: {{ s.error }}{% endif %}</p>

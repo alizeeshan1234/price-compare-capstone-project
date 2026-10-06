@@ -1,17 +1,32 @@
 <!doctype html>
-<html lang="en">
+<html lang="en"{% if request.query_params.get("theme") in ("dark", "light") %} data-theme="{{ request.query_params.get("theme") }}"{% endif %}>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}PriceCompare{% endblock %}</title>
+  <meta name="description" content="Search Amazon, Flipkart, Snapdeal, Vijay Sales, Croma and Reliance Digital at once and compare prices side by side.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="/static/style.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚖️</text></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%235b5bf6'/><path d='M32 14v36M18 24l14-6 14 6M12 40c0 4 3 7 6 7s6-3 6-7l-6-14zM40 40c0 4 3 7 6 7s6-3 6-7l-6-14z' fill='none' stroke='white' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+  <script>
+    (function () { try { var t = localStorage.getItem('theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {} })();
+  </script>
 </head>
 <body>
 <header class="topbar">
-  <a class="brand" href="/">⚖️ PriceCompare</a>
-  <nav><a href="/alerts">Alerts</a><a href="/docs" target="_blank" rel="noopener">API</a></nav>
+  <a class="brand" href="/">
+    <span class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M6 7l6-2 6 2"/><path d="M3 15c0 2 1.5 3 3 3s3-1 3-3L6 9zM15 15c0 2 1.5 3 3 3s3-1 3-3l-3-6z"/></svg></span>
+    PriceCompare
+  </a>
   {% if mock_mode %}<span class="badge warn" title="MOCK_STORES=1: results are simulated">Demo mode</span>{% endif %}
+  <nav>
+    <a href="/">Search</a>
+    <a href="/alerts">Alerts</a>
+    <a href="/docs" target="_blank" rel="noopener">API</a>
+    <button class="theme-toggle" type="button" title="Toggle dark mode" aria-label="Toggle dark mode" onclick="(function(){var r=document.documentElement;var dark=r.getAttribute('data-theme')==='dark'||(!r.getAttribute('data-theme')&&matchMedia('(prefers-color-scheme: dark)').matches);var t=dark?'light':'dark';r.setAttribute('data-theme',t);try{localStorage.setItem('theme',t)}catch(e){}})()">◐</button>
+  </nav>
 </header>
 <main class="container">{% block content %}{% endblock %}</main>
 <footer class="footer">Searches Amazon, Flipkart, Snapdeal, Vijay Sales, Croma and Reliance Digital in parallel, matches the same product across stores and tracks prices day by day.</footer>

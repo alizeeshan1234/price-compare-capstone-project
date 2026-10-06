@@ -3,14 +3,30 @@
 {% block content %}
 
 <section class="hero {% if q %}compact{% endif %}">
-  {% if not q %}<h1>Find the best price, everywhere.</h1>
-  <p class="lead">Type a product. We search every store at once and line the prices up side by side.</p>{% endif %}
-  <form method="get" action="/" class="search">
-    <input type="search" name="q" value="{{ q }}" placeholder="e.g. iPhone 15 128GB, Sony WH-1000XM5, Boat Airdopes" autofocus required minlength="2" maxlength="120">
-    <button type="submit">Compare</button>
+  {% if not q %}
+  <span class="eyebrow"><span class="dot"></span> Live prices from {{ stores|length }} Indian stores</span>
+  <h1>Find the best price, <span class="grad">everywhere.</span></h1>
+  <p class="lead">Type a product once. We search every store at the same time, match the same product across them and line the prices up side by side.</p>
+  {% endif %}
+  <form method="get" action="/" class="search" role="search">
+    <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span>
+    <input type="search" name="q" value="{{ q }}" placeholder="iPhone 15 128GB, Sony WH-1000XM5, boAt Airdopes…" autofocus required minlength="2" maxlength="120" aria-label="Product name">
+    <button type="submit">Compare prices</button>
   </form>
-  {% if not q and recent %}
-    <p class="recent">Recent: {% for r in recent %}<a href="/?q={{ r|urlencode }}">{{ r }}</a>{% endfor %}</p>
+  {% if not q %}
+    <div class="stores-row">
+      {% set swatches = {'amazon': '#ff9900', 'flipkart': '#2874f0', 'snapdeal': '#e40046', 'vijaysales': '#c8102e', 'croma': '#12daa8', 'reliancedigital': '#e42529'} %}
+      {% for s in stores %}<span class="store-pill"><span class="sw" style="background: {{ swatches.get(s, '#999') }}"></span>{{ store_labels[s] }}</span>{% endfor %}
+    </div>
+    {% if recent %}
+      <p class="recent">Recent: {% for r in recent %}<a href="/?q={{ r|urlencode }}">{{ r }}</a>{% endfor %}</p>
+    {% endif %}
+    <div class="features">
+      <div class="feature"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h8l-1 8 10-12h-8z"/></svg></span><h3>All stores at once</h3><p>Every store is searched in parallel and shows up the moment it answers.</p></div>
+      <div class="feature"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span><h3>Same product, one row</h3><p>Listings are matched by model, storage and variant, so you compare like with like.</p></div>
+      <div class="feature"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 4 8-8"/><path d="M14 8h6v6"/></svg></span><h3>30-day price history</h3><p>A sparkline per product shows whether today's price is really a low.</p></div>
+      <div class="feature"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10 21h4"/></svg></span><h3>Price-drop alerts</h3><p>Set a target price and get an email when any store goes below it.</p></div>
+    </div>
   {% endif %}
 </section>
 
@@ -24,6 +40,12 @@
   </section>
 {% elif progressive %}
   <div id="results-top">
+    <section class="summary skel" aria-hidden="true">
+      <div class="stat"><span class="label">Stores searched</span><span class="value"><i></i></span></div>
+      <div class="stat"><span class="label">Offers found</span><span class="value"><i></i></span></div>
+      <div class="stat"><span class="label">Products matched</span><span class="value"><i></i></span></div>
+      <div class="stat"><span class="label">Lowest price</span><span class="value"><i></i></span></div>
+    </section>
     <section class="card loading" aria-live="polite">
       <p class="progress"><span class="spinner"></span> <span id="progress-text">Searching {{ stores|length }} stores at once…</span></p>
       <div class="bar"><span id="progress-bar" style="width:0%"></span></div>
@@ -34,7 +56,8 @@
     <div class="columns">
       {% for s in stores %}
       <div class="col pending" id="col-{{ s }}">
-        <h3>{{ store_labels[s] }} <span class="muted"><span class="spinner small"></span> searching…</span></h3>
+        <h3>{{ store_labels[s] }} <span class="muted"><span class="spinner small"></span> searching</span></h3>
+        {% for _ in range(3) %}<div class="skeleton"><i class="img"></i><i class="l1"></i><i class="l2"></i></div>{% endfor %}
       </div>
       {% endfor %}
     </div>
@@ -45,7 +68,7 @@
     const labels = {{ store_labels|tojson }};
     const results = {}; let done = 0;
     const text = document.getElementById('progress-text'), bar = document.getElementById('progress-bar');
-    function tick(name) {
+    function tick() {
       done += 1;
       bar.style.width = Math.round(done / stores.length * 100) + '%';
       const left = stores.filter(s => !(s in results)).map(s => labels[s]);
@@ -64,7 +87,7 @@
         col.innerHTML = `<h3>${labels[name]}</h3><p class="empty">Unavailable: ${err.message}</p>`;
       }
       col.classList.remove('pending');
-      tick(name);
+      tick();
     }));
     try {
       const r = await fetch('/fragment/compare', {method: 'POST', headers: {'Content-Type': 'application/json'},
@@ -79,18 +102,20 @@
 
 {% if health %}
 <section class="card health">
-  <h2>Store health <span class="muted">(last 7 days)</span></h2>
+  <h2>Store health <span class="muted">last 7 days</span></h2>
+  <div class="table-wrap">
   <table class="compact">
-    <thead><tr><th>Store</th><th class="num">Searches</th><th class="num">Success</th><th class="num">Avg time</th><th class="num">Avg results</th></tr></thead>
+    <thead><tr><th>Store</th><th class="num">Searches</th><th>Success rate</th><th class="num">Avg time</th><th class="num">Avg results</th></tr></thead>
     <tbody>
     {% for h in health %}
-      <tr><td>{{ store_labels.get(h.store, h.store) }}</td><td class="num">{{ h.attempts }}</td>
-        <td class="num {% if h.success_rate is not none and h.success_rate < 50 %}bad{% endif %}">{% if h.success_rate is not none %}{{ "%.0f"|format(h.success_rate) }}%{% else %}—{% endif %}</td>
+      <tr><td><strong>{{ store_labels.get(h.store, h.store) }}</strong></td><td class="num">{{ h.attempts }}</td>
+        <td>{% if h.success_rate is not none %}<span class="rate {% if h.success_rate < 50 %}low{% endif %}"><span class="bar"><span style="width: {{ "%.0f"|format(h.success_rate) }}%"></span></span>{{ "%.0f"|format(h.success_rate) }}%</span>{% else %}—{% endif %}</td>
         <td class="num">{% if h.avg_ms %}{{ h.avg_ms }} ms{% else %}—{% endif %}</td>
         <td class="num">{{ h.avg_count if h.avg_count is not none else "—" }}</td></tr>
     {% endfor %}
     </tbody>
   </table>
+  </div>
   {% if history_stats and history_stats.points %}<p class="hint">Price history: {{ history_stats.points }} daily price points for {{ history_stats.listings }} listings over {{ history_stats.days }} day{{ 's' if history_stats.days != 1 }}.</p>{% endif %}
 </section>
 {% endif %}

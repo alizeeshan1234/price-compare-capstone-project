@@ -1,20 +1,20 @@
 {# Summary, store chips and the side-by-side table. Expects `result`, `q`, `stores`. #}
 {% set cheapest = result.cheapest %}
 <section class="summary">
-  <div class="stat"><span class="label">Stores searched</span><span class="value">{{ result.ok_stores|length }}/{{ result.stores|length }}</span></div>
+  <div class="stat"><span class="label">Stores searched</span><span class="value">{{ result.ok_stores|length }}<span class="muted">/{{ result.stores|length }}</span></span></div>
   <div class="stat"><span class="label">Offers found</span><span class="value">{{ result.offers|length }}</span></div>
   <div class="stat"><span class="label">Products matched</span><span class="value">{{ result.groups|length }}</span></div>
   <div class="stat best">
     <span class="label">Lowest price</span>
     {% if cheapest %}<span class="value">{{ cheapest.price|money(cheapest.currency) }}</span>
-    <span class="sub">{{ cheapest.title|truncate(42) }} · {{ store_labels[cheapest.store] }}</span>{% else %}<span class="value">—</span>{% endif %}
+    <span class="sub">{{ cheapest.title|truncate(44) }} · {{ store_labels[cheapest.store] }}</span>{% else %}<span class="value">—</span>{% endif %}
   </div>
 </section>
 
 <p class="storeline">
   {% for s in result.stores.values() %}
     <span class="chip {{ 'ok' if s.ok else 'fail' }}" title="{{ s.error or (s.duration_ms ~ ' ms') }}">
-      {{ s.label }}: {% if s.ok %}{{ s.offers|length }} result{{ 's' if s.offers|length != 1 }}{% if s.cached %} (cached){% endif %}{% else %}failed{% endif %}
+      {{ s.label }} · {% if s.ok %}{{ s.offers|length }}{% if s.cached %} (cached){% endif %}{% else %}failed{% endif %}
     </span>
   {% endfor %}
   <a class="refresh" href="/?q={{ q|urlencode }}&refresh=1">↻ Refresh prices</a>
@@ -28,52 +28,53 @@
 
 {% if result.groups %}
 <section class="card">
-  <h2>Side-by-side comparison</h2>
+  <h2>Side-by-side comparison <span class="muted">{{ result.groups|length }} product{{ 's' if result.groups|length != 1 }}</span></h2>
   <div class="table-wrap">
   <table class="compare">
     <thead>
-      <tr><th>Product</th>{% for s in stores %}<th class="num">{{ store_labels[s] }}</th>{% endfor %}<th class="num">You save</th><th class="trend">30-day trend</th><th></th></tr>
+      <tr><th>Product</th>{% for s in stores %}<th class="num">{{ store_labels[s] }}</th>{% endfor %}<th class="num">You save</th><th class="trend">30-day trend</th></tr>
     </thead>
     <tbody>
     {% for g in result.groups %}
       {% set best = g.cheapest %}
       <tr class="{% if g.store_count > 1 %}multi{% endif %}">
         <td class="title">
-          {% if best.image %}<img src="{{ best.image }}" alt="" loading="lazy">{% endif %}
-          <div><a href="{{ best.url }}" target="_blank" rel="noopener">{{ g.title }}</a>
-          <span class="muted">{{ g.store_count }} store{{ 's' if g.store_count != 1 }}{% if best.rating %} · ★ {{ best.rating }}{% endif %}{% if g.accessory %} · <em>accessory</em>{% endif %}</span></div>
+          <div class="prod">
+            <span class="thumb {% if not best.image %}empty{% endif %}">{% if best.image %}<img src="{{ best.image }}" alt="" loading="lazy">{% else %}▢{% endif %}</span>
+            <div><a class="name" href="{{ best.url }}" target="_blank" rel="noopener">{{ g.title }}</a>
+            <span class="muted">{{ g.store_count }} store{{ 's' if g.store_count != 1 }}{% if best.rating %} · <span class="stars">★</span> {{ best.rating }}{% endif %}{% if g.accessory %} · <em>accessory</em>{% endif %}</span>
+            <div class="row-actions">
+      <details class="alert-form">
+        <summary title="Email me when this drops below a price">🔔 Alert</summary>
+        <form method="post" action="/alerts">
+          <input type="hidden" name="query" value="{{ q }}">
+          <input type="hidden" name="title" value="{{ g.title }}">
+          <input type="hidden" name="key" value="{{ best.key }}">
+          <input type="hidden" name="store" value="{{ best.store }}">
+          <input type="hidden" name="url" value="{{ best.url }}">
+          <input type="hidden" name="current_price" value="{{ best.price }}">
+          <label>Email <input type="email" name="email" required placeholder="you@example.com"></label>
+          <label>Alert when below {{ '₹' if best.currency == 'INR' else best.currency }} <input type="number" name="target_price" required min="1" step="1" value="{{ ((best.price * 0.95) // 10 * 10)|int }}"></label>
+          <button type="submit">Watch this price</button>
+        </form>
+      </details>
+            </div></div>
+          </div>
         </td>
         {% for s in stores %}
           {% set o = g.by_store.get(s) %}
           <td class="num {% if o and o.price == best.price %}best{% endif %}">
             {% if o %}<a href="{{ o.url }}" target="_blank" rel="noopener">{{ o.price|money(o.currency) }}</a>
-            {% if o.price == best.price and g.store_count > 1 %}<span class="tag">lowest</span>{% endif %}
+            {% if o.price == best.price and g.store_count > 1 %}<br><span class="tag">lowest</span>{% endif %}
             {% else %}<span class="muted">—</span>{% endif %}
           </td>
         {% endfor %}
-        <td class="num">{% if g.store_count > 1 and g.savings > 0 %}<strong class="good">{{ g.savings|money(best.currency) }}</strong>
-          <span class="muted">({{ "%.0f"|format(g.savings_pct) }}%)</span>{% else %}<span class="muted">—</span>{% endif %}</td>
+        <td class="num">{% if g.store_count > 1 and g.savings > 0 %}<span class="pill-save">{{ g.savings|money(best.currency) }} <small>{{ "%.0f"|format(g.savings_pct) }}%</small></span>{% else %}<span class="muted">—</span>{% endif %}</td>
         <td class="trend">
           {% if g.history_days > 1 %}
             {{ sparkline(g.history) }}
-            <span class="muted">{% if g.at_low %}<strong class="good">Lowest in {{ g.history_days }} days</strong>{% else %}30-day low {{ g.low30|money(best.currency) }}{% endif %}</span>
+            <span class="muted">{% if g.at_low %}<span class="low-flag">▼ Lowest in {{ g.history_days }} days</span>{% else %}30-day low {{ g.low30|money(best.currency) }}{% endif %}</span>
           {% else %}<span class="muted" title="Prices are recorded once a day; the trend appears after the second day">first seen today</span>{% endif %}
-        </td>
-        <td class="actions">
-          <details class="alert-form">
-            <summary title="Email me when this drops below a price">🔔 Alert</summary>
-            <form method="post" action="/alerts">
-              <input type="hidden" name="query" value="{{ q }}">
-              <input type="hidden" name="title" value="{{ g.title }}">
-              <input type="hidden" name="key" value="{{ best.key }}">
-              <input type="hidden" name="store" value="{{ best.store }}">
-              <input type="hidden" name="url" value="{{ best.url }}">
-              <input type="hidden" name="current_price" value="{{ best.price }}">
-              <label>Email <input type="email" name="email" required placeholder="you@example.com"></label>
-              <label>Alert below {{ '₹' if best.currency == 'INR' else best.currency }} <input type="number" name="target_price" required min="1" step="1" value="{{ ((best.price * 0.95) // 10 * 10)|int }}"></label>
-              <button type="submit">Watch</button>
-            </form>
-          </details>
         </td>
       </tr>
     {% endfor %}
