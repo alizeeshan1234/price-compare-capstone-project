@@ -10,10 +10,10 @@
 <body>
 <header class="topbar">
   <a class="brand" href="/">⚖️ PriceCompare</a>
-  <nav><a href="/docs" target="_blank" rel="noopener">API</a></nav>
+  <nav><a href="/alerts">Alerts</a><a href="/docs" target="_blank" rel="noopener">API</a></nav>
   {% if mock_mode %}<span class="badge warn" title="MOCK_STORES=1: results are simulated">Demo mode</span>{% endif %}
 </header>
 <main class="container">{% block content %}{% endblock %}</main>
-<footer class="footer">Searches Amazon, Flipkart, Snapdeal and Vijay Sales in parallel and matches the same product across stores.</footer>
+<footer class="footer">Searches Amazon, Flipkart, Snapdeal, Vijay Sales, Croma and Reliance Digital in parallel, matches the same product across stores and tracks prices day by day.</footer>
 </body>
 </html>

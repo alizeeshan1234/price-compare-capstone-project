@@ -21,3 +21,17 @@ SCRAPER_API_KEY: str = os.getenv("SCRAPER_API_KEY", "").strip()
 SCRAPER_PROXY_URL: str = os.getenv("SCRAPER_PROXY_URL", "").strip()
 PROXY_TIMEOUT: int = int(os.getenv("PROXY_TIMEOUT", "60"))
 PROXY_COUNTRY: str = os.getenv("PROXY_COUNTRY", "in")
+
+HOSTED: bool = bool(os.getenv("VERCEL"))
+APP_URL: str = os.getenv("APP_URL", "").rstrip("/") or (f"https://{os.getenv('VERCEL_PROJECT_PRODUCTION_URL')}" if os.getenv("VERCEL_PROJECT_PRODUCTION_URL") else "http://localhost:8000")
+
+# Price-drop alerts. The checker runs via Vercel Cron (sends `Authorization: Bearer CRON_SECRET`),
+# `make alerts`, or POST /api/alerts/run?token=CRON_SECRET from any scheduler.
+CRON_SECRET: str = os.getenv("CRON_SECRET", "").strip()
+# Email delivery for alerts. Leave SMTP_HOST empty to log instead of sending (demo mode).
+SMTP_HOST: str = os.getenv("SMTP_HOST", "").strip()
+SMTP_PORT: int = int(os.getenv("SMTP_PORT", "587"))
+SMTP_USER: str = os.getenv("SMTP_USER", "").strip()
+SMTP_PASSWORD: str = os.getenv("SMTP_PASSWORD", "")
+SMTP_STARTTLS: bool = os.getenv("SMTP_STARTTLS", "1") == "1"
+ALERT_FROM: str = os.getenv("ALERT_FROM", SMTP_USER or "pricecompare@example.com")

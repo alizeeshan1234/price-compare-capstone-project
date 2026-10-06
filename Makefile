@@ -1,4 +1,4 @@
-.PHONY: install dev run demo test docker
+.PHONY: install dev run demo test eval alerts docker
 
 install:
 	python3 -m venv .venv && .venv/bin/pip install -q -r requirements.txt
@@ -14,6 +14,12 @@ demo:
 
 test:
 	.venv/bin/pytest -q
+
+eval:
+	.venv/bin/python -m evaluation.evaluate
+
+alerts:
+	.venv/bin/python -m app.alerts
 
 docker:
 	docker compose up --build
